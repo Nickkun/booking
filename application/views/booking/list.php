@@ -1,9 +1,10 @@
 <h2>목록</h2>
 <ul>
-	<li><a href="/booking/detail">아이템 1</a></li>
-	<li><a href="/booking/detail">아이템 2</a></li>
-	<li><a href="/booking/detail">아이템 3</a></li>
-	<li><a href="/booking/detail">아이템 4</a></li>
-	<li><a href="/booking/detail">아이템 5</a></li>
+	<? if(isset($list)) : ?>
+		<? foreach($list as $key => $value) : ?>
+			<li><a href="/booking/detail/<? echo $value['item_no'] ?>"><? echo $value['title'] ?></a></li>
+		<? endforeach; ?>
+	<? else: ?>
+		<li>표시할 항목이 없습니다</li>
+	<? endif; ?>
 </ul>
-<p>표시할 항목이 존재하지 않습니다</p>
