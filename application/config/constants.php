@@ -17,7 +17,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 define('FILE_READ_MODE', 0644);
 define('FILE_WRITE_MODE', 0666);
 define('DIR_READ_MODE', 0755);
-define('DIR_WRITE_MODE', 0755);
+define('DIR_WRITE_MODE', 0777);
 
 /*
 |--------------------------------------------------------------------------
@@ -84,3 +84,20 @@ define('EXIT_USER_INPUT', 7); // invalid user input
 define('EXIT_DATABASE', 8); // database error
 define('EXIT__AUTO_MIN', 9); // lowest automatically-assigned error code
 define('EXIT__AUTO_MAX', 125); // highest automatically-assigned error code
+
+/*
+|--------------------------------------------------------------------------
+| User's Custom Constants
+|--------------------------------------------------------------------------
+|
+| 사용자가 정의한 상수의 목록
+|
+*/
+define('UPLOAD_ROOT_PATH', '/public_html/static/uploads/');
+define('BREADCRUMBS', var_export(array('booking' => '예약',
+									   'host' => '호스트',
+									   'mypage' => '마이페이지',
+									   'list' => '목록',
+									   'detail' => '상세내역'), true));
+
+define('SUB_PAGE_TITLE', 'BY HAPPYCANVAS');

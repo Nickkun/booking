@@ -14,7 +14,7 @@ class Booking extends CI_Controller {
 			$data['logged_in'] = $this->session->logged_in;
 
 		if($method === 'list') {
-			$data['list'] = $this->booking_model->get_list();	
+			$data['list'] = $this->booking_model->get_list();
 		}
 
 		$this->load->view('header', $data);
@@ -52,11 +52,20 @@ class Booking extends CI_Controller {
 	 |------------------------------------------------------
 	 | DESCRIPTION :
 	 | 선택한 아이템을 신청인원과 함께 신청하며,
-	 | booking DB에 정보를 저장합니다
+	 | booking DB에 정보를 저장하기 위한 뷰 페이지
 	 |------------------------------------------------------
 	 */
 	 public function apply($url) {
-	 	$data['item_no'] = $this->uri->segment(3);
+	 	if (!$this->session->has_userdata('logged_in'))
+	 		redirect('/member/login');
+	 	$item_no = $this->uri->segment(3);
+	 	$data['item_no'] = $item_no;
+	 	$item = $this->booking_model->get_item($item_no);
+	 	$data['item'] = $item;
+
+	 	// 선택한 아이템을 신청한 총 인원
+	 	$data['present_applicants'] = $this->booking_model->get_item_applicants($item_no);
+
 	 	$this->load->view($url, $data);
 	 }
 	/*
@@ -69,19 +78,33 @@ class Booking extends CI_Controller {
 		$item_no = $this->uri->segment(3);
 		$applicant = $this->input->post('applicant');
 		$member_no = $this->session->member_no;
-		$data = array('item_no' => $item_no, 'member_no' => $member_no, 'applicant' => $applicant);
-		
-		$result = $this->booking_model->insert($data);
-
 		$data['result'] = '예약 신청';
-		if ($result) {
-			$data['msg'] = '예약 신청에 성공했습니다';
-			$data['redirect'] = '/booking/';
-			$this->load->view('/success', $data);
-		} else {
-			$data['msg'] = '신청이 실패했습니다';
+
+		$check_exists_item = $this->booking_model->check_member_item($item_no, $member_no);
+		if ($check_exists_item != 0) {
+			$data['msg'] = '이미 신청한 아이템입니다.';
 			$data['redirect'] = '/booking/apply/'.$item_no;
 			$this->load->view('/fail', $data);
+		} else {
+			$check_limit = $this->booking_model->check_applicant_limit($item_no, $applicant);
+			if (!$check_limit) {
+				$data['msg'] = '신청한 인원이 모집제한을 초과합니다. 신청가능 인원을 확인하세요.';
+				$data['redirect'] = '/booking/apply/'.$item_no;
+				$this->load->view('/fail', $data);
+			} else {
+				$new_data = array('item_no' => $item_no, 'member_no' => $member_no, 'applicant' => $applicant);
+				$result = $this->booking_model->insert($new_data);
+
+				if ($result) {
+					$data['msg'] = '예약 신청에 성공했습니다';
+					$data['redirect'] = '/booking/';
+					$this->load->view('/success', $data);
+				} else {
+					$data['msg'] = '신청이 실패했습니다';
+					$data['redirect'] = '/booking/apply/'.$item_no;
+					$this->load->view('/fail', $data);
+				}
+			}
 		}
 	}
 }

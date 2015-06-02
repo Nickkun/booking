@@ -26,10 +26,17 @@ class Member_model extends CI_Model {
      |------------------------------------------------------
      */
     public function insert($new_member) {
-        $result = $this->db->insert('member', $new_member);
+        $this->db->where('email', $new_member['email']);
+        $query = $this->db->get('member');
+        if ($query->num_rows > 0) {
+            $condition = array('email' => $new_member['email']);
+            $result = $this->db->update('member', $new_member, $condition);
+        } else {
+            $result = $this->db->insert('member', $new_member);
+        }
+    
         return $result;
     }
-    
     /*
      |------------------------------------------------------
      | DESCRIPTION : 
@@ -43,11 +50,22 @@ class Member_model extends CI_Model {
     /*
      |------------------------------------------------------
      | DESCRIPTION : 
-     | 멤버를 탈퇴한다 
+     | 멤버를 탈퇴한다. Flag 값 (is_available) 변경 
      |------------------------------------------------------
      */
     public function delete($condition) {
-        $result = $this->db->delete('member', $condition);
+        $data = array('is_available' => 0);
+        $result = $this->db->update('member', $data, $condition);
+        return $result;
+    }
+    /*
+     |------------------------------------------------------
+     | DESCRIPTION : 
+     | 멤버의 비밀번호를 수정한다
+     |------------------------------------------------------
+     */
+    public function update_password($data, $condition) {
+        $result = $this->db->update('member', $data, $condition);
         return $result;
     }
 }

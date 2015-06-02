@@ -13,6 +13,9 @@ class Member extends CI_Controller {
 		$data['logged_in'] = '';
 		if ($this->session->has_userdata('logged_in')) {
 			$data['logged_in'] = $this->session->logged_in;
+			$data['email'] = $this->session->email;
+			$data['name'] = $this->session->name;
+			$data['password'] = $this->session->password;
 		}
 
 		$this->load->view('header', $data);
@@ -49,13 +52,13 @@ class Member extends CI_Controller {
 	 	if (count($member) > 0) {
 	 		$data['msg'] = '로그인에 성공했습니다';
 	 		$data['redirect'] = '/';
-	 		$user_data = array('logged_in' => TRUE, 'member_no' => $member['member_no'], 'email' => $member['email'], 'name' => $member['name']);
+	 		$user_data = array('logged_in' => TRUE, 'member_no' => $member['member_no'], 'email' => $member['email'], 'name' => $member['name'], 'password' => $member['password']);
 	 		$this->session->set_userdata($user_data);
-
 	 		$this->load->view('/success', $data);
 	 	} else {
 	 		$data['msg'] = '로그인에 실패했습니다';
 	 		$data['redirect'] = '/member/login';
+	 		$this->load->view('/fail', $data);
 
 	 	}
 	}
@@ -82,30 +85,73 @@ class Member extends CI_Controller {
 	 |------------------------------------------------------
 	 */
 	 public function do_signup() {
-	 	$email = $this->input->post('email');
-	 	$name = $this->input->post('name');
-	 	$password = $this->input->post('password');
-	 	$password_confirm = $this->input->post('password_confirm');
+	 	if ($this->form_validation->run('signup') == FALSE) {
+	 		$this->load->view('/member/signup');
+	 	} else {
+	 		/* HOST 등록 체크시 HOST 정보 입력 */
+		 	$host_registration = $this->input->post('host_registration');
+		 	if (!is_null($host_registration)) {
+		 		$this->load->view('/member/host_signup');
+		 	} else {
+		 		/* DB Insert */
+			 	$email = $this->input->post('email');
+			 	$name = $this->input->post('name');
+			 	$password = $this->input->post('password');
 
-	 	$new_member = array('email' => $email, 'name' => $name, 'password' => md5($password));
+			 	$new_member = array('email' => $email, 'name' => $name, 'password' => $password);
 
-	 	$data['result'] = '회원가입';
+			 	$data['result'] = '회원가입';
 
-	 	if ($password === $password_confirm) {
+		 		$result = $this->member_model->insert($new_member);
+		 		if ($result) {
+		 			$data['msg'] = '회원가입에 성공했습니다';
+		 			$data['redirect'] = '/';
+		 			$this->load->view('/success', $data);
+		 		} else {
+		 			$data['msg'] = '회원가입에 실패했습니다';
+		 			$data['redirect'] = '/member/signup';
+		 			$this->load->view('/fail', $data);
+		 		}
+		 	}
+		}	 	
+	 }
+	 /*
+	 |------------------------------------------------------
+	 | DESCRIPTION :
+	 | 작성된 데이터를 기준으로 호스트 멤버로 가입한다
+	 |------------------------------------------------------
+	 */
+	 public function do_host_signup() {
+	 	if ($this->form_validation->run('host_signup') == FALSE) {
+	 		$this->load->view('/member/host_signup');
+	 	} else {
+
+		 	/* DB Insert */
+			$email         = $this->input->post('email');
+			$name          = $this->input->post('name');
+			$password      = $this->input->post('password');
+			$host_name     = $this->input->post('host_name');
+			$host_contact  = $this->input->post('host_contact');
+			$host_email    = $this->input->post('host_email');
+			$host_homepage = $this->input->post('host_homepage');
+
+
+		 	$new_member = array('email' => $email, 'name' => $name, 'password' => $password, 
+		 						'host_name' => $host_name, 'host_contact' => $host_contact, 'host_email' => $host_email,
+		 						'host_homepage' => $host_homepage);
+
+		 	$data['result'] = '회원가입(호스트)';
+
 	 		$result = $this->member_model->insert($new_member);
 	 		if ($result) {
-	 			$data['msg'] = '회원가입에 성공했습니다';
+	 			$data['msg'] = '회원가입(호스트)에 성공했습니다';
 	 			$data['redirect'] = '/';
 	 			$this->load->view('/success', $data);
 	 		} else {
-	 			$data['msg'] = '회원가입에 실패했습니다';
+	 			$data['msg'] = '회원가입(호스트)에 실패했습니다';
 	 			$data['redirect'] = '/member/signup';
 	 			$this->load->view('/fail', $data);
 	 		}
-	 	} else {
-	 		$data['msg'] = '비밀번호가 일치하지 않습니다';
-	 			$data['redirect'] = '/member/signup';
-	 			$this->load->view('/fail', $data);
 	 	}
-	 }
+	}
 }

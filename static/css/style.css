@@ -6,3 +6,19 @@
 * {
     font-family: "Nanum Gothic", sans-serif;
 }
+.error {
+	color: red;
+	font-weight: bold;
+	font-size: 0.9em;
+}
+
+body {
+	padding-top: 70px;
+}
+img {
+	max-width: 100% !important;
+	height: auto !important;
+}
+.margin-top-10 {
+	margin-top : 10px;
+}
